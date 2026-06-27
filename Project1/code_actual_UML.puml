@@ -1,0 +1,1918 @@
+@startuml MetalSlug_Code_Actual
+
+' ============================================================
+' UML DERIVED FROM THE ACTUAL SOURCE CODE
+'   Generated from headers under Project1/Project1/*.h and
+'   cross-checked against the corresponding .cpp files.
+'   Wherever this conflicts with final_UML(usesProt).puml, the
+'   code wins (the older UML is aspirational in places).
+' ============================================================
+
+title Metal Slug — Class Diagram (from current code)
+
+top to bottom direction
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+skinparam classFontStyle bold
+skinparam groupInheritance 2
+skinparam nodesep 50
+skinparam ranksep 80
+
+' ============================================================
+' VALUE / UTILITY TYPES
+' ============================================================
+class coordSyst <<struct>> {
+    + x : float
+    + y : float
+}
+class Box <<struct>> {
+    + x : float
+    + y : float
+    + w : float
+    + h : float
+}
+class Crater <<struct>> {
+    + x : int
+    + y : int
+    + width : int
+    + depth : int
+    + exposureTime : float
+}
+class EnemySpawn <<struct>> {
+    + masterCopy : Enemy*
+    + spawnPosition : coordSyst
+    + batchSize : int
+    + biome : Biome*
+}
+
+' ============================================================
+' ENGINE ROOT
+' ============================================================
+class Game {
+    - window : sf::RenderWindow*
+    - clock : sf::Clock
+    - stateMgr : GameStateManager*
+    - isRunning : bool
+    + Game()
+    + ~Game()
+    + run() : void
+    + processEvents() : void
+    + update(dt:float) : void
+    + render() : void
+    + shutdown() : void
+}
+
+class GameStateManager {
+    - {static} GSM_CAP : int = 8
+    - states : GameState*[GSM_CAP]
+    - stateCount : int
+    + pushState(s:GameState*) : void
+    + popState() : void
+    + replaceTop(s:GameState*) : void
+    + currentState() : GameState*
+    + update(dt:float) : void
+    + render(rw:sf::RenderWindow&) : void
+    + handleInputForTop() : void
+}
+
+abstract class GameState {
+    # owner : GameStateManager*
+    + GameState()
+    + setOwner(o:GameStateManager*) : void
+    + {abstract} enter() : void
+    + {abstract} exit() : void
+    + {abstract} update(dt:float) : void
+    + {abstract} render(rw:sf::RenderWindow&) : void
+    + {abstract} handleInput(in:InputHandler&) : void
+}
+
+class MenuState {
+    - menu : MainMenu*
+    + enter() : void
+    + exit() : void
+    + update(dt:float) : void
+    + render(rw:sf::RenderWindow&) : void
+    + handleInput(in:InputHandler&) : void
+}
+
+class MainMenu {
+    + {static} OPT_SURVIVAL : int = 0
+    + {static} OPT_CAMPAIGN : int = 1
+    + {static} OPT_SELF_PLAY : int = 2
+    + {static} OPT_HIGHSCORES : int = 3
+    + {static} OPT_COUNT : int = 4
+    - bgTex/Spr, titleTex/Spr, lblTex/Spr[4], cursorTex/Spr
+    - btnX/Y/W/H : float[4]
+    - cursorIdx : int
+    - ready : bool
+    - wantsHighScores : bool
+    - selectedMode : GameMode*
+    - cursorPulseTimer : float
+    - cachedScores : int[5]
+    + update(dt:float) : void
+    + render(rw:sf::RenderWindow&) : void
+    + handleInput(in:InputHandler&) : void
+    + getSelectedMode() : GameMode*
+    + isReady() : bool
+    + shouldShowScores() : bool
+    + consumeScoreRequest() : void
+    + getCursorIndex() : int
+}
+
+class PlayState {
+    - entityMgr : EntityManager*
+    - levelMgr : LevelManager*
+    - players : PlayerSoldier*[4]
+    - numPlayers : int
+    - activePlayerIdx : int
+    - mode : GameMode*
+    - developerModeActive : bool
+    - collisionMgr : CollisionManager*
+    - scoreMgr : ScoreManager*
+    - hud : HUD*
+    - camera : Camera*
+    - textures : TextureManager*
+    - pilotedVehicle : Vehicle*[4]
+    - fusionUsedThisLevel : bool
+    - fusionUsedAtLevelIdx : int
+    - activeFusion : FusionCompanion*
+    - highscoreSaved : bool
+    - levelClearPending : bool
+    - levelClearDelay : float
+    - bgMusic : sf::Music
+    - currentTrackID : int
+    + PlayState(m:GameMode*)
+    + enter() : void
+    + exit() : void
+    + update(dt:float) : void
+    + render(rw:sf::RenderWindow&) : void
+    + handleInput(in:InputHandler&) : void
+    + switchCharacter() : void
+    + getActivePlayer() : PlayerSoldier*
+    + isGameOver() : bool
+    + getScoreManager() : ScoreManager&
+    + getCamera() : Camera*
+    + getEntityManager() : EntityManager*
+    + getLevelManager() : LevelManager*
+    + advanceLevel() : void
+    + toggleDeveloperMode() : void
+    + spawnProjectile(p:Projectile*) : void
+    + setMode(m:GameMode*) : void
+    + tryEnterNearestVehicle() : void
+    + tryExitVehicle() : void
+    + getActiveVehicle() : Vehicle*
+    + tryReleaseNearestPOW() : void
+}
+
+' ============================================================
+' GAME MODE (Strategy)
+' ============================================================
+abstract class GameMode {
+    + {abstract} setupLevels(lm:LevelManager&) : void
+    + {abstract} isComplete(ps:PlayState&) : bool
+    + {abstract} onLevelCleared(ps:PlayState&) : void
+    + {abstract} modeName() : char*
+}
+class SurvivalMode {
+    + setupLevels(lm:LevelManager&) : void
+    + isComplete(ps:PlayState&) : bool
+    + onLevelCleared(ps:PlayState&) : void
+    + modeName() : char*
+}
+class CampaignMode {
+    + setupLevels(lm:LevelManager&) : void
+    + isComplete(ps:PlayState&) : bool
+    + onLevelCleared(ps:PlayState&) : void
+    + modeName() : char*
+}
+class SelfPlayingMode {
+    - neat : NEATManager*
+    + setupLevels(lm:LevelManager&) : void
+    + isComplete(ps:PlayState&) : bool
+    + onLevelCleared(ps:PlayState&) : void
+    + modeName() : char*
+}
+
+' ============================================================
+' LEVEL HIERARCHY
+' ============================================================
+class LevelManager {
+    - currentLevel : Level*
+    - currentLevelIdx : int
+    - entityMgr : EntityManager*
+    - textures : TextureManager*
+    + LevelManager(em:EntityManager*, tm:TextureManager*)
+    + loadLevel(idx:int, mode:GameMode*) : void
+    + unloadCurrent() : void
+    + advance() : void
+    + loadBossLevel() : void
+    + getCurrent() : Level*
+    + getCurrentIdx() : int
+}
+
+abstract class Level {
+    # tileMap : TileMap*
+    # levelIndex : int
+    + {abstract} update(dt:float) : void
+    + {abstract} render(rw:sf::RenderWindow&) : void
+    + {abstract} generateTerrain() : void
+    + {abstract} spawnEnemies() : void
+    + {abstract} spawnPlayerVehicles() : void
+    + {abstract} isComplete() : bool
+    + consumeClearBonus() : bool
+    + onPlayerAtRightBoundary(p:PlayerSoldier*, em:EntityManager&) : void
+    + getTileMap() : TileMap*
+    + getIndex() : int
+    + setIndex(i:int) : void
+    + asSurvivalLevel() : SurvivalLevel*
+    + asBossLevel() : BossLevel*
+}
+
+class SurvivalLevel {
+    - {static} MAX_SPAWNS : int = 64
+    - {static} MAX_RECIPES : int = 80
+    - fixedSpawnMarks : EnemySpawn*
+    - spawnMarkCount : int
+    - nextSpawnIndex : int
+    - numOfSpawnBatches : int
+    - complete : bool
+    - clearBonusAwarded : bool
+    - relocationCooldown : float
+    - cowardiceReserve : CowardiceReserve
+    - respawnSideToggle : int
+    - recipes : SpawnRecipe*[MAX_RECIPES]
+    - recipeCount : int
+    - entityMgr : EntityManager*
+    - textures : TextureManager*
+    + SurvivalLevel(idx:int, em:EntityManager*, tm:TextureManager*)
+    + update(dt:float) : void
+    + render(rw:sf::RenderWindow&) : void
+    + generateTerrain() : void
+    + spawnEnemies() : void
+    + spawnPlayerVehicles() : void
+    + isComplete() : bool
+    + consumeClearBonus() : bool
+    + onPlayerAtRightBoundary(p:PlayerSoldier*, em:EntityManager&) : void
+    + asSurvivalLevel() : SurvivalLevel*
+    + tickCowardiceStream(p:PlayerSoldier*, em:EntityManager&, cam:Camera*, dt:float) : void
+    + tickSpawnTriggers(cam:Camera*) : void
+    + placeOnGround(e:Entity*, biomeIdx:int) : void
+}
+
+class BossLevel {
+    - groundBoss : IronNokana*
+    - aerialBoss : HairBusterRiberts*
+    - aquaticBoss : SeaSatan*
+    - ultimateBoss : UltimateBoss*
+    - activeBoss : Boss*
+    - currentPhase : BossPhase*
+    - activeBatchAlive : int
+    - activeBatchOriginalSize : int
+    - entityMgr : EntityManager*
+    - textures : TextureManager*
+    - complete : bool
+    - clearBonusAwarded : bool
+    + BossLevel(em:EntityManager*, tm:TextureManager*)
+    + update(dt:float) : void
+    + render(rw:sf::RenderWindow&) : void
+    + generateTerrain() : void
+    + spawnEnemies() : void
+    + spawnPlayerVehicles() : void
+    + isComplete() : bool
+    + consumeClearBonus() : bool
+    + getPhase() : int
+    + getActiveBoss() : Boss*
+    + asBossLevel() : BossLevel*
+}
+
+' ============================================================
+' SPAWNING + RESERVE HELPERS
+' ============================================================
+class SpawnRecipe {
+    - triggerX : float
+    - biomeIdx : int
+    - count : int
+    - spawned : bool
+    - prototype : Entity*
+    - isAerial : bool
+    + SpawnRecipe(tx:float, biome:int, n:int, proto:Entity*, aerial:bool)
+    + isSpawned() : bool
+    + getTriggerX() : float
+    + getBiomeIdx() : int
+    + getCount() : int
+    + fire(em:EntityManager&, lvl:SurvivalLevel&) : void
+}
+
+class CowardiceReserve {
+    - {static} MAX_RESERVED : int = 64
+    - slots : Enemy*[MAX_RESERVED]
+    - head : int
+    - count : int
+    - spawnTimer : float
+    + {static} SPAWN_INTERVAL : float
+    + {static} SKIP_MARGIN : float
+    + {static} RESPAWN_MARGIN : float
+    + isEmpty() : bool
+    + getCount() : int
+    + enqueue(e:Enemy*) : void
+    + dequeue() : Enemy*
+    + tickSpawnReady(dt:float) : bool
+}
+
+' ============================================================
+' ENTITY ROOT
+' ============================================================
+abstract class Entity {
+    # position : coordSyst
+    # velocity : coordSyst
+    # width : float
+    # height : float
+    # isAlive : bool
+    # isOnGround : bool
+    # touchesWall : bool
+    + {abstract} update(tm:TileMap&, dt:float) : void
+    + {abstract} render(rw:sf::RenderWindow&) : void
+    + checkCollision(other:Entity&) : bool
+    + getHitbox() : Box
+    + getPosition() : coordSyst
+    + getVelocity() : coordSyst
+    + getWidth() : float
+    + getHeight() : float
+    + getIsAlive() : bool
+    + getIsOnGround() : bool
+    + setPosition(x:float, y:float) : void
+    + setVelocity(vx:float, vy:float) : void
+    + kill() : void
+    + getRenderable() : SpriteAnimator*
+    + clone() : Entity*
+    + takePendingSpawn() : Entity*
+    + isPlayer() : bool
+    + asDamagableEntity() : DamagableEntity*
+    + asProjectile() : Projectile*
+    + asEnemy() : Enemy*
+    + asAreaHazard() : AreaHazard*
+    + asCollectible() : Collectible*
+    + asVehicle() : Vehicle*
+    + asParatrooper() : Paratrooper*
+    + asFireBombProjectile() : FireBombProjectile*
+    + asFlyingTara() : FlyingTara*
+    + asM15ABradley() : M15ABradley*
+    + asEnemySub() : EnemySub*
+    + asFusionCompanion() : FusionCompanion*
+    + asBoss() : Boss*
+    + asPlayerSoldier() : PlayerSoldier*
+}
+
+abstract class DamagableEntity {
+    # healthPoints : int
+    # maxHealthPoints : int
+    # isInvelnerable : bool
+    # currentDamageState : DamageState*
+    # m_canFire : bool
+    + DamagableEntity(startHP:int)
+    + DamagableEntity(other:DamagableEntity&)
+    + operator=(other:DamagableEntity&) : DamagableEntity&
+    + virtual takeDamage(amt:int, src:DamageSource*) : void
+    + virtual die() : void
+    + getHealth() : int
+    + setHealth(hp:int) : void
+    + getMaxHealth() : int
+    + setMaxHealth(newMax:int) : void
+    + getDamageState() : DamageState*
+    + advanceDamageState() : void
+    + asDamagableEntity() : DamagableEntity*
+    + getCanFire() : bool
+    + setCanFire(b:bool) : void
+}
+
+' ============================================================
+' SOLDIER BRANCH
+' ============================================================
+abstract class Soldier {
+    # currentTransformState : TransformationState*
+    # facing : Direction*
+    # baseSpeed : float
+    # baseFireRate : float
+    # attackDamage : int
+    # aimAngle : float
+    # m_anim : SpriteAnimator
+    # equippedWeapon : Weapon*
+    + Soldier(hp:int)
+    + Soldier(other:Soldier&)
+    + operator=(other:Soldier&) : Soldier&
+    + changeState(s:TransformationState*) : void
+    + virtual move(dt:float) : void
+    + virtual attack() : void
+    + virtual jump() : void
+    + setAimAngle(deg:float) : void
+    + getAimAngle() : float
+    + getFacing() : Direction*
+    + setFacing(d:Direction*) : void
+    + getAnimator() : SpriteAnimator&
+    + getBaseSpeed() : float
+    + scaleBaseSpeed(k:float) : void
+    + virtual getInventoryPtr() : Inventory*
+    + virtual getSpeedMult() : float
+    + virtual setSpeedMult(m:float) : void
+    + virtual meleePiercesShield() : bool
+    + getEquippedWeapon() : Weapon*
+    + setEquippedWeapon(w:Weapon*) : void
+    + render(rw:sf::RenderWindow&) : void
+    + getRenderable() : SpriteAnimator*
+}
+
+abstract class PlayerSoldier {
+    # lives : int
+    # saturationStat : int
+    # canMelee : bool
+    # fireRateMultiplier : float
+    # speedMultiplier : float
+    # meleeDamageMultiplier : float
+    # ammoPickupMultiplier : float
+    # blastRadiusMultiplier : float
+    # powerUpTimer : float
+    # powerUpActive : bool
+    # fusionCooldownTimer : float
+    # fusionUsedInLevel : bool
+    # inventory : Inventory
+    # fireCooldown : float
+    # invulnTimer : float
+    # m_isActiveSlot : bool
+    # respawnTimer : float
+    # m_normal, m_mummy, m_undead, m_fat : SpriteAnimator
+    # m_active : SpriteAnimator*
+    + isRiding : bool
+    + {static} PENDING_CAP : int = 4
+    + pendingProjectile : Entity*
+    + pendingExtras : Entity*[PENDING_CAP]
+    + pendingExtraCount : int
+    + {abstract} specialPowerUp() : void
+    + onPowerUpExpire() : void
+    + dualFireWhilePoweredUp() : bool
+    + superchargedFireRate() : float
+    + getVehicleFireRateMult() : float
+    + getVehicleDurabilityMult() : float
+    + respawn() : void
+    + virtual throwGrenade() : void
+    + virtual meleeAttack() : void
+    + virtual pickupWeapon(w:Weapon*) : void
+    + virtual takeDamage(amt:int, src:DamageSource*) : void
+    + virtual onVehicleDestroyed() : bool
+    + checkSaturationTransition() : void
+    + getGrenadePrototype() : Grenade*
+    + attack() : void
+    + update(tm:TileMap&, dt:float) : void
+    + handlePlayerInput(in:InputHandler&, dt:float) : void
+    + render(rw:sf::RenderWindow&) : void
+    + getRenderable() : SpriteAnimator*
+    + isPlayer() : bool
+    + getInventoryPtr() : Inventory*
+    + getSpeedMult() : float
+    + setSpeedMult(m:float) : void
+    + setActiveSlot(active:bool) : void
+    + getIsActiveSlot() : bool
+    + isInRespawnWindow() : bool
+    + getRespawnTimer() : float
+    + getLives() : int
+    + getSaturation() : int
+    + getPowerUpActive() : bool
+    + getIsRiding() : bool
+    + setRiding(r:bool) : void
+    + getInventory() : Inventory&
+    + addSaturation(n:int) : void
+    + addLives(n:int) : void
+    + getAmmoPickupMult() : float
+    + getMeleeDamageMult() : float
+    + getBlastRadiusMult() : float
+    + takePendingProjectile() : Entity*
+    + queueProjectile(p:Entity*) : void
+    + takeQueuedProjectile() : Entity*
+    + asPlayerSoldier() : PlayerSoldier*
+}
+
+class Marco {
+    + Marco(tm:TextureManager&)
+    + specialPowerUp() : void
+    + dualFireWhilePoweredUp() : bool
+    + meleePiercesShield() : bool
+}
+class Tarma {
+    - vehicleFireRateMult : float
+    - vehicleDurabilityMult : float
+    + Tarma(tm:TextureManager&)
+    + specialPowerUp() : void
+    + onPowerUpExpire() : void
+    + onVehicleDestroyed() : bool
+    + getVehicleFireRateMult() : float
+    + getVehicleDurabilityMult() : float
+}
+class Eri {
+    + Eri(tm:TextureManager&)
+    + specialPowerUp() : void
+    + throwGrenade() : void
+    + meleeAttack() : void
+}
+class Fio {
+    + Fio(tm:TextureManager&)
+    + specialPowerUp() : void
+    + pickupWeapon(w:Weapon*) : void
+}
+
+class FusionCompanion {
+    - linkedPlayer : PlayerSoldier*
+    - fusionMembers : PlayerSoldier*[MAX_MEMBERS]
+    - memberCount : int
+    - remainingDuration : float
+    - averagedFireRate : float
+    - averagedSpeed : float
+    - averagedDamage : int
+    + {static} MAX_MEMBERS : int = 4
+    + FusionCompanion(tm:TextureManager&, members:PlayerSoldier**, count:int, x:float, y:float, dur:float)
+    + setFollowTarget(p:PlayerSoldier*) : void
+    + follow() : void
+    + update(tm:TileMap&, dt:float) : void
+    + attack() : void
+    + takeDamage(amt:int, src:DamageSource*) : void
+    + asFusionCompanion() : FusionCompanion*
+}
+
+' ============================================================
+' DIRECTION (Strategy)
+' ============================================================
+abstract class Direction {
+    + {abstract} getXSign() : int
+    + {abstract} flip() : Direction*
+    + {abstract} clone() : Direction*
+}
+class LeftDirection {
+    + getXSign() : int
+    + flip() : Direction*
+    + clone() : Direction*
+}
+class RightDirection {
+    + getXSign() : int
+    + flip() : Direction*
+    + clone() : Direction*
+}
+
+' ============================================================
+' TRANSFORMATION STATE (State)
+' ============================================================
+abstract class TransformationState {
+    # owner : Soldier*
+    # duration : float
+    + TransformationState(dur:float)
+    + {abstract} enter(s:Soldier*) : void
+    + {abstract} exit(s:Soldier*) : void
+    + {abstract} update(s:Soldier*, dt:float) : void
+    + getAnimPrefix() : char*
+}
+class NormalTransformState
+class FatTransformState
+class MummyTransformState
+class UndeadTransformState
+
+' ============================================================
+' DAMAGE STATE (State)
+' ============================================================
+abstract class DamageState {
+    # owner : DamagableEntity*
+    # remainingTime : float
+    + enter(d:DamagableEntity*) : void
+    + exit(d:DamagableEntity*) : void
+    + update(d:DamagableEntity*, dt:float) : void
+    + {abstract} hueAlpha() : float
+    + {abstract} next() : DamageState*
+}
+class NormalDamageState {
+    + enter(d:DamagableEntity*) : void
+    + hueAlpha() : float
+    + next() : DamageState*
+}
+class InjuredDamageState {
+    + enter(d:DamagableEntity*) : void
+    + hueAlpha() : float
+    + next() : DamageState*
+}
+class CriticalDamageState {
+    + enter(d:DamagableEntity*) : void
+    + hueAlpha() : float
+    + next() : DamageState*
+}
+class DeadDamageState {
+    + enter(d:DamagableEntity*) : void
+    + hueAlpha() : float
+    + next() : DamageState*
+}
+
+' ============================================================
+' DAMAGE SOURCE
+' ============================================================
+abstract class DamageSource {
+    # cause : Entity*
+    + DamageSource(c:Entity*)
+    + {abstract} amount() : int
+    + canKillMummy() : bool
+    + isExplosive() : bool
+}
+class BulletDamage
+class ExplosionDamage
+class FireDamage
+class MeleeDamage
+class ContactDamage
+
+' ============================================================
+' INVENTORY + WEAPONS
+' ============================================================
+class Inventory {
+    - currentWeaponInHand : Weapon*
+    - defaultPistol : Pistol*
+    - knife : Knife*
+    - grenadePrototype : Grenade*
+    - grenadeCount : int
+    - savedWeaponBeforeSwap : Weapon*
+    - inForcedSwap : bool
+    + Inventory()
+    + ~Inventory()
+    + pickupWeapon(w:Weapon*) : void
+    + getCurrentWeapon() : Weapon*
+    + getKnife() : Knife*
+    + hasWeapon() : bool
+    + revertToPistol() : void
+    + forceKnifeOnly() : void
+    + restoreSavedWeapon() : void
+    + equipFatPistol() : void
+    + restoreFromFatPistol() : void
+    + setGrenadePrototype(g:Grenade*) : void
+    + getGrenadePrototype() : Grenade*
+    + getGrenadeCount() : int
+    + addGrenades(n:int) : void
+    + consumeGrenade() : Grenade*
+}
+
+abstract class Weapon {
+    # damage : int
+    # ammo : int
+    # fireRate : float
+    # maxAmmo : int
+    + Weapon(dmg:int, startAmmo:int, rate:float, max:int)
+    + {abstract} fire(owner:Soldier*, aim:coordSyst) : Entity*
+    + {abstract} clone() : Weapon*
+    + consumeAmmo() : void
+    + getAmmo() : int
+    + hasAmmo() : bool
+    + getFireRate() : float
+    + refillByPercent(frac:float) : void
+    + getAnimPrefix() : char*
+}
+abstract class ProjectileWeapon {
+    # muzzleOffset : coordSyst
+    + ProjectileWeapon(dmg:int, startAmmo:int, rate:float, max:int, offset:coordSyst)
+    + virtual spawnProjectile(owner:Soldier*, aim:coordSyst) : Projectile*
+}
+class Pistol {
+    + Pistol()
+    + fire(owner:Soldier*, aim:coordSyst) : Entity*
+    + spawnProjectile(owner:Soldier*, aim:coordSyst) : Projectile*
+    + clone() : Weapon*
+    + getAnimPrefix() : char*
+}
+class Knife {
+    - meleeRange : float
+    - meleeCooldown : float
+    + Knife()
+    + fire(owner:Soldier*, aim:coordSyst) : Entity*
+    + clone() : Weapon*
+}
+class HeavyMachineGun {
+    + HeavyMachineGun()
+    + fire(owner:Soldier*, aim:coordSyst) : Entity*
+    + spawnProjectile(owner:Soldier*, aim:coordSyst) : Projectile*
+    + clone() : Weapon*
+}
+class RocketLauncher {
+    - reloadTimer : float
+    + RocketLauncher()
+    + fire(owner:Soldier*, aim:coordSyst) : Entity*
+    + spawnProjectile(owner:Soldier*, aim:coordSyst) : Projectile*
+    + clone() : Weapon*
+}
+class FlameShot {
+    - streamLength : float
+    - activeStream : FireStream*
+    + FlameShot()
+    + fire(owner:Soldier*, aim:coordSyst) : Entity*
+    + clone() : Weapon*
+    + stopFire() : void
+}
+class LaserGun {
+    + LaserGun()
+    + fire(owner:Soldier*, aim:coordSyst) : Entity*
+    + clone() : Weapon*
+}
+class FatPistol {
+    + FatPistol()
+    + fire(owner:Soldier*, aim:coordSyst) : Entity*
+    + spawnProjectile(owner:Soldier*, aim:coordSyst) : Projectile*
+    + clone() : Weapon*
+}
+
+' ============================================================
+' GRENADE (Prototype)
+' ============================================================
+abstract class Grenade {
+    # blastRadius : float
+    # damage : int
+    + Grenade(radius:float, dmg:int)
+    + {abstract} clone() : Grenade*
+    + {abstract} spawnProjectile(owner:Entity*, aim:coordSyst) : Projectile*
+    + getBlastRadius() : float
+    + getDamage() : int
+}
+class HandGrenadePrototype {
+    + HandGrenadePrototype()
+    + clone() : Grenade*
+    + spawnProjectile(owner:Entity*, aim:coordSyst) : Projectile*
+}
+class FireBombPrototype {
+    + FireBombPrototype()
+    + clone() : Grenade*
+    + spawnProjectile(owner:Entity*, aim:coordSyst) : Projectile*
+}
+
+' ============================================================
+' VEHICLE BRANCH
+' ============================================================
+abstract class Vehicle {
+    # pilot : PlayerSoldier*
+    # isOccupied : bool
+    # fireRate : float
+    # fireCooldown : float
+    # m_anim : SpriteAnimator
+    + Vehicle(hp:int)
+    + enter(p:PlayerSoldier*) : void
+    + exit() : PlayerSoldier*
+    + getIsOccupied() : bool
+    + getPilot() : PlayerSoldier*
+    + virtual onDestroy() : void
+    + {abstract} fire(aim:coordSyst) : Entity*
+    + virtual takeDamage(amt:int, src:DamageSource*) : void
+    + virtual render(rw:sf::RenderWindow&) : void
+    + getRenderable() : SpriteAnimator*
+    + virtual pilotInput(in:InputHandler&, dt:float) : void
+    + pilotFireRateMult() : float
+    + asVehicle() : Vehicle*
+}
+abstract class GroundVehicle {
+    # treadSpeed : float
+    + virtual traverseStep(tm:TileMap&) : void
+}
+abstract class AerialVehicle {
+    # hoverHeight : float
+    + virtual ascend(dt:float) : void
+}
+abstract class AquaticVehicle {
+    # depth : float
+    + virtual dive(dt:float) : void
+}
+class MetalSlug {
+    + MetalSlug(tm:TextureManager&, x:float, y:float)
+    + update(tm:TileMap&, dt:float) : void
+    + fire(aim:coordSyst) : Entity*
+    + pilotInput(in:InputHandler&, dt:float) : void
+}
+class SlugFlyer {
+    - missilesRemaining : int
+    + SlugFlyer(tm:TextureManager&, x:float, y:float)
+    + update(tm:TileMap&, dt:float) : void
+    + fire(aim:coordSyst) : Entity*
+    + pilotInput(in:InputHandler&, dt:float) : void
+}
+class SlugMariner {
+    - horizontalMissiles : int
+    - verticalMissiles : int
+    - reverseArcMissiles : int
+    + SlugMariner(tm:TextureManager&, x:float, y:float)
+    + update(tm:TileMap&, dt:float) : void
+    + fire(aim:coordSyst) : Entity*
+    + pilotInput(in:InputHandler&, dt:float) : void
+}
+class AmphibiousSlug {
+    - currentMode : VehicleModeStrategy*
+    - aimAngle : float
+    + AmphibiousSlug(tm:TextureManager&, x:float, y:float)
+    + ~AmphibiousSlug()
+    + update(tm:TileMap&, dt:float) : void
+    + fire(aim:coordSyst) : Entity*
+    + pilotInput(in:InputHandler&, dt:float) : void
+    + switchMode(tm:TileMap&) : void
+    + fireAsSlug(aim:coordSyst) : void
+    + fireAsFlyerMissile(aim:coordSyst) : void
+    + fireAsFlyerBullet(aim:coordSyst) : void
+    + fireAsMarinerHorizontal(aim:coordSyst) : void
+    + fireAsMarinerVertical(aim:coordSyst) : void
+    + fireAsMarinerReverse(aim:coordSyst) : void
+}
+
+abstract class VehicleModeStrategy {
+    # owner : AmphibiousSlug*
+    + setOwner(o:AmphibiousSlug*) : void
+    + {abstract} fire(aim:coordSyst) : void
+    + {abstract} update(tm:TileMap&, dt:float) : void
+    + {abstract} canSwitchTo(tm:TileMap&) : VehicleModeStrategy*
+}
+class NormalSlugMode {
+    + fire(aim:coordSyst) : void
+    + update(tm:TileMap&, dt:float) : void
+    + canSwitchTo(tm:TileMap&) : VehicleModeStrategy*
+}
+class FlyerMode {
+    - missilesRemaining : int
+    + fire(aim:coordSyst) : void
+    + update(tm:TileMap&, dt:float) : void
+    + canSwitchTo(tm:TileMap&) : VehicleModeStrategy*
+}
+class MarinerMode {
+    - horizontalMissiles : int
+    - verticalMissiles : int
+    - reverseArcMissiles : int
+    + fire(aim:coordSyst) : void
+    + update(tm:TileMap&, dt:float) : void
+    + canSwitchTo(tm:TileMap&) : VehicleModeStrategy*
+}
+
+' ============================================================
+' ENEMY VEHICLES
+' ============================================================
+abstract class EnemyVehicle {
+    # movesHorizontally : bool
+    # scoreValue : int
+    + EnemyVehicle(hp:int, horizMover:bool, scoreVal:int)
+    + fire(aim:coordSyst) : Entity*
+    + onDestroy() : void
+    + die() : void
+    + getScoreValue() : int
+    + movesHoriz() : bool
+}
+class FlyingTara {
+    + FlyingTara(tm:TextureManager&, x:float, y:float)
+    + update(tm:TileMap&, dt:float) : void
+    + attack() : void
+    + clampToCameraBand(top:float, bot:float) : void
+    + asFlyingTara() : FlyingTara*
+}
+class M15ABradley {
+    - isStationary : bool
+    + M15ABradley(tm:TextureManager&, x:float, y:float)
+    + update(tm:TileMap&, dt:float) : void
+    + attack() : void
+    + asM15ABradley() : M15ABradley*
+}
+class EnemySub {
+    + EnemySub(tm:TextureManager&, x:float, y:float)
+    + update(tm:TileMap&, dt:float) : void
+    + attack() : void
+    + asEnemySub() : EnemySub*
+}
+
+' ============================================================
+' ENEMY BRANCH
+' ============================================================
+abstract class Enemy {
+    # scoreValue : int
+    # isGrudgeful : bool
+    # currentAIState : EnemyAIState*
+    # m_anim : SpriteAnimator
+    # m_inReserve : bool
+    # m_tex : TextureManager*
+    # weapon : Weapon*
+    # pendingDrop : Collectible*
+    # pendingProjectile : Entity*
+    + Enemy(scoreVal:int, hp:int, grudgeful:bool)
+    + Enemy(other:Enemy&)
+    + operator=(other:Enemy&) : Enemy&
+    + {abstract} attack() : void
+    + virtual update(tm:TileMap&, dt:float) : void
+    + virtual render(rw:sf::RenderWindow&) : void
+    + virtual onDeath() : void
+    + die() : void
+    + pathToPlayer(tm:TileMap&, target:coordSyst) : void
+    + changeAIState(s:EnemyAIState*) : void
+    + {abstract} clone() : Enemy*
+    + virtual onPlayerContact(p:PlayerSoldier*) : void
+    + virtual blocksProjectile(incomingDir:coordSyst, isExplosive:bool) : bool
+    + virtual isAerial() : bool
+    + getScoreValue() : int
+    + getIsGrudgeful() : bool
+    + setIsGrudgeful(g:bool) : void
+    + getInReserve() : bool
+    + setInReserve(b:bool) : void
+    + getRenderable() : SpriteAnimator*
+    + asEnemy() : Enemy*
+    + takePendingDrop() : Collectible*
+    + takePendingProjectile() : Entity*
+    + takePendingSpawn() : Entity*
+    # rollDeathDrop() : void
+}
+
+abstract class EnemyAIState {
+    # owner : Enemy*
+    + {abstract} enter(e:Enemy*) : void
+    + {abstract} exit(e:Enemy*) : void
+    + {abstract} update(e:Enemy*, tm:TileMap&, dt:float) : void
+}
+class PatrolAIState {
+    - patrolSpeed : float
+    - facingSign : int
+    + enter(e:Enemy*) : void
+    + exit(e:Enemy*) : void
+    + update(e:Enemy*, tm:TileMap&, dt:float) : void
+}
+class ChaseAIState
+class AttackAIState
+class GrudgefulAIState
+
+abstract class Infantry {
+    # batchId : int
+    + getBatchId() : int
+}
+class RebelSoldier {
+    + RebelSoldier(tm:TextureManager&, x:float, y:float, batchId:int)
+    + update(tm:TileMap&, dt:float) : void
+    + attack() : void
+    + clone() : Enemy*
+}
+class ShieldedSoldier {
+    + ShieldedSoldier(tm:TextureManager&, x:float, y:float, batchId:int)
+    + update(tm:TileMap&, dt:float) : void
+    + attack() : void
+    + takeDamage(amt:int, src:DamageSource*) : void
+    + blocksProjectile(dir:coordSyst, isExplosive:bool) : bool
+    + clone() : Enemy*
+}
+class BazookaSoldier {
+    + BazookaSoldier(tm:TextureManager&, x:float, y:float, batchId:int)
+    + update(tm:TileMap&, dt:float) : void
+    + attack() : void
+    + clone() : Enemy*
+}
+class Grenadier {
+    + Grenadier(tm:TextureManager&, x:float, y:float, batchId:int)
+    + update(tm:TileMap&, dt:float) : void
+    + attack() : void
+    + clone() : Enemy*
+}
+class Paratrooper {
+    - hasLanded : bool
+    - isParachuting : bool
+    - kind : ParatrooperKind*
+    - descendSpeed : float
+    - facingDir : int
+    - landedSpawn : Infantry*
+    - tex : TextureManager*
+    + Paratrooper(tm:TextureManager&, x:float, y:float, k:ParatrooperKind*, batchId:int)
+    + ~Paratrooper()
+    + update(tm:TileMap&, dt:float) : void
+    + attack() : void
+    + onDeath() : void
+    + onLand() : void
+    + clone() : Enemy*
+    + takeLandedSpawn() : Infantry*
+    + hasParachuted() : bool
+    + isAerial() : bool
+    + asParatrooper() : Paratrooper*
+    + takePendingSpawn() : Entity*
+}
+
+abstract class ParatrooperKind {
+    + {abstract} scoreBase() : int
+    + {abstract} spawnLanded(tm:TextureManager&, x:float, y:float, batchId:int) : Infantry*
+    + {abstract} clone() : ParatrooperKind*
+}
+class RebelParatrooperKind
+class ShieldedParatrooperKind
+class BazookaParatrooperKind
+class GrenadierParatrooperKind
+
+abstract class Undead {
+    + {abstract} onPlayerContact(p:PlayerSoldier*) : void
+}
+class MummyWarrior {
+    - crumbleTimer : float
+    - isCrumbled : bool
+    - resurrectionDelay : float
+    + MummyWarrior(tm:TextureManager&, x:float, y:float)
+    + update(tm:TileMap&, dt:float) : void
+    + attack() : void
+    + onPlayerContact(p:PlayerSoldier*) : void
+    + takeDamage(amt:int, src:DamageSource*) : void
+    + resurrect() : void
+    + clone() : Enemy*
+}
+class Zombie {
+    - weapon : Weapon*
+    + Zombie(tm:TextureManager&, x:float, y:float)
+    + Zombie(other:Zombie&)
+    + operator=(other:Zombie&) : Zombie&
+    + ~Zombie()
+    + update(tm:TileMap&, dt:float) : void
+    + attack() : void
+    + onPlayerContact(p:PlayerSoldier*) : void
+    + clone() : Enemy*
+}
+
+abstract class Alien {
+    + {abstract} attack() : void
+}
+class Martian {
+    - phase : int
+    - hasPod : bool
+    + Martian(tm:TextureManager&, x:float, y:float)
+    + update(tm:TileMap&, dt:float) : void
+    + attack() : void
+    + onDeath() : void
+    + transitionToPhase2() : void
+    + clone() : Enemy*
+}
+
+' ============================================================
+' BOSS BRANCH
+' ============================================================
+abstract class Boss {
+    # retreatThreshold : float
+    # hasRetreated : bool
+    # minionBatchSize : int
+    # minionPrototype : Enemy*
+    # currentStrategy : FiringStrategy*
+    # pendingShotOrigin : coordSyst
+    # pendingShotAim : coordSyst
+    # hasPendingShot : bool
+    # wantsMinionBatch : bool
+    # wantsCrateDrop : bool
+    # chaseTargetX : float
+    # hasChaseTarget : bool
+    + Boss(scoreVal:int, hp:int, threshold:float, minionBatch:int)
+    + virtual checkRetreat() : bool
+    + virtual spawnMinions(em:EntityManager*) : void
+    + getHasRetreated() : bool
+    + getMinionBatchSize() : int
+    + virtual setChaseTarget(x:float) : void
+    + virtual takePendingShot() : Entity*
+    + takePendingSpawn() : Entity*
+    + virtual consumeMinionRequest() : bool
+    + virtual consumeCrateRequest() : bool
+    + virtual requestCrateDrop() : void
+    + asBoss() : Boss*
+}
+class IronNokana {
+    - turretMissileCount : int
+    - hasFlamethrower : bool
+    - crawlSpeed : float
+    - facingDir : int
+    - fireCooldown : float
+    - flameCooldown : float
+    - flameBurstTimer : float
+    - bombCooldown : float
+    - retreatTimer : float
+    - explodeStage : int
+    - explodeTimer : float
+    - minionTimer : float
+    - rocketStrat : RocketFiringStrategy
+    - flameStrat : FlameStreamFiringStrategy
+    - fireBombStrat : FireBombFiringStrategy
+    + IronNokana(tm:TextureManager&, x:float, y:float)
+    + update(tm:TileMap&, dt:float) : void
+    + attack() : void
+    + clone() : Enemy*
+}
+class HairBusterRiberts {
+    + HairBusterRiberts(tm:TextureManager&, x:float, y:float)
+    + update(tm:TileMap&, dt:float) : void
+    + attack() : void
+    + clone() : Enemy*
+}
+class SeaSatan {
+    + SeaSatan(tm:TextureManager&, x:float, y:float)
+    + update(tm:TileMap&, dt:float) : void
+    + attack() : void
+    + clone() : Enemy*
+}
+class UltimateBoss {
+    - {static} NUM_FORMS : int = 3
+    - forms : Boss*[NUM_FORMS]
+    - currentFormIdx : int
+    - currentForm : Boss*
+    - formTimer : float
+    - formTransitionInterval : float
+    - formY : float[NUM_FORMS]
+    - introTimer : float
+    - introCycleTimer : float
+    - {static} kIntroDuration : float
+    - {static} kIntroCyclePeriod : float
+    + UltimateBoss(tm:TextureManager&, x:float, gY:float, aY:float, aqY:float)
+    + update(tm:TileMap&, dt:float) : void
+    + attack() : void
+    + spawnMinions(em:EntityManager*) : void
+    + checkRetreat() : bool
+    + takeDamage(amt:int, src:DamageSource*) : void
+    + getRenderable() : SpriteAnimator*
+    + render(rw:sf::RenderWindow&) : void
+    + transitionForm() : void
+    + canUseForm(form:Boss*) : bool
+    + clone() : Enemy*
+    + inIntro() : bool
+    + getCurrentForm() : Boss*
+    + takePendingShot() : Entity*
+    + consumeMinionRequest() : bool
+    + consumeCrateRequest() : bool
+    + requestCrateDrop() : void
+    + setChaseTarget(x:float) : void
+}
+
+' ============================================================
+' BOSS PHASE (State, owned by BossLevel)
+' ============================================================
+abstract class BossPhase {
+    + {abstract} enter(lvl:BossLevel*) : void
+    + {abstract} tick(lvl:BossLevel*) : BossPhase*
+    + {abstract} phaseId() : int
+}
+class BossPhase1Ground
+class BossPhase2Aerial
+class BossPhase3Aquatic
+class BossPhase4Fused
+class BossPhaseDone
+
+' ============================================================
+' FIRING STRATEGY (Strategy, used by bosses + crates)
+' ============================================================
+abstract class FiringStrategy {
+    + {abstract} produce(shooter:Entity*, origin:coordSyst, aim:coordSyst) : Entity*
+}
+class RocketFiringStrategy
+class HMGFiringStrategy
+class FireBombFiringStrategy
+class FlameStreamFiringStrategy
+
+' ============================================================
+' PROJECTILES
+' ============================================================
+abstract class Projectile {
+    # owner : Entity*
+    # damage : int
+    # direction : coordSyst
+    # speed : float
+    # aoePending : bool
+    # ownerIsHostile : bool
+    + Projectile(shooter:Entity*, dmg:int, dir:coordSyst, spd:float)
+    + {abstract} update(tm:TileMap&, dt:float) : void
+    + virtual render(rw:sf::RenderWindow&) : void
+    + virtual onImpact() : void
+    + virtual isExplosiveImpact() : bool
+    + virtual isMeleeImpact() : bool
+    + virtual isPiercingShield() : bool
+    + isOwnerHostile() : bool
+    + getDamage() : int
+    + getOwner() : Entity*
+    + getAoePending() : bool
+    + setAoePending(b:bool) : void
+    + asProjectile() : Projectile*
+}
+abstract class StraightProjectile {
+    # maxRange : float
+    # distCovered : float
+    + StraightProjectile(shooter:Entity*, dmg:int, dir:coordSyst, spd:float, range:float)
+    + virtual update(tm:TileMap&, dt:float) : void
+}
+abstract class BallisticProjectile {
+    # initialSpeed : float
+    # gravity : float
+    + BallisticProjectile(shooter:Entity*, dmg:int, dir:coordSyst, spd:float, grav:float)
+    + virtual update(tm:TileMap&, dt:float) : void
+}
+class Bullet {
+    + Bullet(shooter:Entity*, dmg:int, dir:coordSyst, spd:float, range:float)
+    + update(tm:TileMap&, dt:float) : void
+    + onImpact() : void
+}
+class Rocket {
+    - blastRadius : float
+    + Rocket(shooter:Entity*, dmg:int, dir:coordSyst, spd:float, range:float, blast:float)
+    + update(tm:TileMap&, dt:float) : void
+    + onImpact() : void
+    + isExplosiveImpact() : bool
+}
+class FatBullet {
+    + FatBullet(shooter:Entity*, dmg:int, dir:coordSyst, spd:float, range:float)
+    + update(tm:TileMap&, dt:float) : void
+    + onImpact() : void
+}
+class EnergyBeam {
+    - range : float
+    - lifetime : float
+    - isInstantKill : bool
+    + EnergyBeam(shooter:Entity*, dmg:int, dir:coordSyst, spd:float)
+    + update(tm:TileMap&, dt:float) : void
+    + render(rw:sf::RenderWindow&) : void
+    + onImpact() : void
+}
+class GrenadeProjectile {
+    - blastRadius : float
+    + GrenadeProjectile(shooter:Entity*, dmg:int, aim:coordSyst, spd:float, grav:float, blast:float)
+    + update(tm:TileMap&, dt:float) : void
+    + onImpact() : void
+    + isExplosiveImpact() : bool
+}
+class FireBombProjectile {
+    - poolRadius : float
+    - poolDuration : float
+    + FireBombProjectile(shooter:Entity*, dmg:int, aim:coordSyst, spd:float, grav:float, blast:float, poolR:float, poolDur:float)
+    + update(tm:TileMap&, dt:float) : void
+    + onImpact() : void
+    + asFireBombProjectile() : FireBombProjectile*
+}
+class BazookaShell {
+    - blastRadius : float
+    + BazookaShell(shooter:Entity*, dmg:int, aim:coordSyst, spd:float, grav:float, blast:float)
+    + update(tm:TileMap&, dt:float) : void
+    + onImpact() : void
+}
+class ReverseArcMissile {
+    - blastRadius : float
+    + ReverseArcMissile(shooter:Entity*, dmg:int, aim:coordSyst, spd:float, grav:float, blast:float)
+    + update(tm:TileMap&, dt:float) : void
+    + onImpact() : void
+}
+
+' ============================================================
+' AREA HAZARDS
+' ============================================================
+abstract class AreaHazard {
+    # damagePerSecond : int
+    # duration : float
+    + AreaHazard(dps:int, dur:float)
+    + {abstract} update(tm:TileMap&, dt:float) : void
+    + virtual render(rw:sf::RenderWindow&) : void
+    + {abstract} isExpired() : bool
+    + getDamagePerSecond() : int
+    + getRemaining() : float
+    + asAreaHazard() : AreaHazard*
+}
+class FirePool {
+    - radius : float
+    + FirePool(x:float, y:float, r:float, dur:float)
+    + update(tm:TileMap&, dt:float) : void
+    + render(rw:sf::RenderWindow&) : void
+    + isExpired() : bool
+}
+class FireStream {
+    - streamLength : float
+    - direction : Direction*
+    + FireStream(origin:coordSyst, dir:Direction*, len:float)
+    + update(tm:TileMap&, dt:float) : void
+    + render(rw:sf::RenderWindow&) : void
+    + isExpired() : bool
+    + deactivate() : void
+}
+
+' ============================================================
+' COLLECTIBLES + INTERACTABLE
+' ============================================================
+abstract class Collectible {
+    # consumed : bool
+    # m_anim : SpriteAnimator
+    + Collectible()
+    + {abstract} onPickup(p:PlayerSoldier*, ps:PlayState&) : void
+    + virtual requiresKeyPress() : bool
+    + virtual update(tm:TileMap&, dt:float) : void
+    + virtual render(rw:sf::RenderWindow&) : void
+    + getRenderable() : SpriteAnimator*
+    + isConsumed() : bool
+    + asCollectible() : Collectible*
+}
+class Turkey {
+    - saturationRestore : int
+    + Turkey(tm:TextureManager&, x:float, y:float)
+    + onPickup(p:PlayerSoldier*, ps:PlayState&) : void
+}
+class Fruit {
+    - saturationRestore : int
+    + Fruit(tm:TextureManager&, x:float, y:float)
+    + onPickup(p:PlayerSoldier*, ps:PlayState&) : void
+}
+class POWPrisoner {
+    + POWPrisoner(tm:TextureManager&, x:float, y:float, seed:unsigned)
+    + onPickup(p:PlayerSoldier*, ps:PlayState&) : void
+    + requiresKeyPress() : bool
+}
+class SupplyCrate {
+    - containedWeapon : Weapon*
+    - containedGrenades : int
+    - containedGrenadePrototype : Grenade*
+    + SupplyCrate(tm:TextureManager&, x:float, y:float)
+    + onPickup(p:PlayerSoldier*, ps:PlayState&) : void
+}
+
+abstract class InteractableObject {
+    # interactionRadius : float
+    # isActive : bool
+    + {abstract} onInteract(p:PlayerSoldier*, ps:PlayState&) : void
+    + {abstract} canInteract(p:PlayerSoldier*) : bool
+}
+
+' ============================================================
+' WORLD: TILE MAP + TILES + BIOMES
+' ============================================================
+class TileMap {
+    - {static} CRATER_CAP : int = 64
+    - {static} BIOME_CAP : int = 4
+    - grid : Tile***
+    - width : int
+    - height : int
+    - tileSize : int
+    - seaLevel : int
+    - craters : Crater[CRATER_CAP]
+    - craterCount : int
+    - biomes : Biome*[BIOME_CAP]
+    - biomeCount : int
+    + TileMap(w:int, h:int, tileSizePx:int)
+    + ~TileMap()
+    + getWidth() : int
+    + getHeight() : int
+    + getTileSize() : int
+    + getSeaLevel() : int
+    + setSeaLevel(y:int) : void
+    + getTile(x:int, y:int) : Tile*
+    + setTile(x:int, y:int, t:Tile*) : void
+    + fillCraterWithWater(x:int, y:int) : void
+    + tickCraterFill(dt:float) : void
+    + addBiome(b:Biome*) : void
+    + getBiomeAt(x:int, gridY:int) : Biome*
+    + topSolidRow(x:int) : int
+    + render(rw:sf::RenderWindow&, camX:float, camY:float, viewW:float, viewH:float, ...) : void
+}
+abstract class Tile {
+    # gridX : int
+    # gridY : int
+    + {abstract} isSolid() : bool
+    + {abstract} isDestructible() : bool
+    + {abstract} isWater() : bool
+    + virtual onEntityEnter(e:Entity*) : void
+    + virtual onExplosion(blastRadius:float) : void
+    + getGridX() : int
+    + getGridY() : int
+    + setGrid(x:int, y:int) : void
+}
+class AirTile
+class SolidTile
+class WaterTile
+class IndestructibleTile
+
+abstract class Biome {
+    # minAltitude : int
+    # maxAltitude : int
+    + Biome(minA:int, maxA:int)
+    + {abstract} biomeName() : char*
+    + {abstract} canHostEnemy(e:Enemy*) : bool
+    + {abstract} canHostVehicle(v:Vehicle*) : bool
+    + {abstract} ambientSoundId() : int
+    + getMinAltitude() : int
+    + getMaxAltitude() : int
+    + containsRow(gridY:int) : bool
+}
+class AerialBiome
+class PlainsBiome
+class AquaticBiome {
+    - seaLevel : int
+}
+
+' ============================================================
+' MANAGERS / SYSTEMS
+' ============================================================
+class EntityManager {
+    - {static} INITIAL_CAP : int = 256
+    - entities : Entity**
+    - entityCount : int
+    - capacity : int
+    - growRoster() : void
+    + EntityManager()
+    + ~EntityManager()
+    + addEntity(e:Entity*) : void
+    + removeEntity(e:Entity*) : void
+    + purgeDead() : void
+    + clearTransientEntities() : void
+    + updateAll(tm:TileMap&, dt:float) : void
+    + renderAll(rw:sf::RenderWindow&, cam:Camera&) : void
+    + getEntities() : Entity**
+    + getCount() : int
+}
+
+class CollisionManager {
+    - isPlayerKill(p:Projectile*) : bool
+    + resolve(em:EntityManager&, tm:TileMap&, active:PlayerSoldier*, sm:ScoreManager*, ps:PlayState*) : void
+}
+
+class ScoreManager {
+    - currentScore : int
+    - bestScore : int
+    - enemyKillCount : int
+    - scoreAtLevelStart : int
+    - killsAtLevelStart : int
+    + {static} MAX_HIGH_SCORES : int = 5
+    + addPoints(n:int) : void
+    + addEnemyKill(e:Enemy*) : void
+    + addEnemyKill(scoreValue:int) : void
+    + addBossKill(isUltimate:bool) : void
+    + addMeleeKillBonus() : void
+    + addAerialKillBonus() : void
+    + addMultiKillBonus(n:int) : void
+    + addMassacreBonus(n:int) : void
+    + addSurvivalLevelClearBonus() : void
+    + addCampaignClearBonus() : void
+    + addFlawlessVictoryBonus() : void
+    + addLevelClearBonus() : void
+    + resetForNewRun() : void
+    + snapshotLevelStart() : void
+    + getLevelScoreDelta() : int
+    + getLevelKillsDelta() : int
+    + getScore() : int
+    + getBest() : int
+    + getEnemyKillCount() : int
+    + saveHighScore(score:int) : void
+    + loadHighScores(out:int*, max:int) : int
+}
+
+class HUD {
+    - font : sf::Font
+    - scoreText, livesText, hpText, killsText, phaseText, bossInfoText : sf::Text
+    - fontLoaded : bool
+    - texOverlayInjured/Critical/Dead : sf::Texture
+    - sprOverlayInjured/Critical/Dead : sf::Sprite
+    - overlaysLoaded : bool
+    - {static} BANNER_COUNT : int = 4
+    - bannerTex/Spr : sf::Texture[]/sf::Sprite[]
+    - bannerLoaded : bool[]
+    - activeBannerIdx : int
+    - bannerTimer : float
+    - lvlScoreText/lvlKillsText/lvlBonusText/lvlTotalText : sf::Text
+    - snapLevelIdx/Score/Kills/ClearBonus/Total : int
+    - snapValid : bool
+    + render(rw:sf::RenderWindow&, p:PlayerSoldier*, sm:ScoreManager&, lvl:Level*) : void
+    + showLevelBanner(levelIdx:int, seconds:float) : void
+    + tickBanner(dt:float) : void
+    + isBannerActive() : bool
+    + setLevelClearStats(idx:int, lvlScore:int, lvlKills:int, clearBonus:int, totalRun:int) : void
+}
+
+class Camera {
+    - topLeft : coordSyst
+    - viewWidth : float
+    - viewHeight : float
+    - mapPixelW : float
+    - mapPixelH : float
+    + Camera(viewW:float, viewH:float)
+    + setMapBounds(pxW:float, pxH:float) : void
+    + followTarget(target:coordSyst) : void
+    + getOffset() : coordSyst
+    + getViewWidth() : float
+    + getViewHeight() : float
+}
+
+class InputHandler {
+    - per-key prev/curr : bool
+    - mouseX/mouseY : int
+    - currMouseL/prevMouseL : bool
+    + poll(window:sf::RenderWindow&) : void
+    + isLeftHeld() / isRightHeld() / isUpHeld() / isDownHeld() : bool
+    + isAimUpHeld() / isFireHeld() / isJumpPressed() : bool
+    + isThrowGrenadePressed() / isMeleePressed() : bool
+    + isSwitchCharacterPressed() / isRewindPressed() : bool
+    + isBestPlayerPressed() / isStartPressed() : bool
+    + isInteractPressed() / isMenuBackPressed() / isFusionPressed() : bool
+    + getMouseX() / getMouseY() : int
+    + isMouseLeftPressed() : bool
+    + isEscapeHeld() : bool
+}
+
+class TextureManager
+class SpriteAnimator
+
+' ============================================================
+' INHERITANCE
+' ============================================================
+GameState           <|-- MenuState
+GameState           <|-- PlayState
+
+GameMode            <|-- SurvivalMode
+GameMode            <|-- CampaignMode
+GameMode            <|-- SelfPlayingMode
+
+Level               <|-- SurvivalLevel
+Level               <|-- BossLevel
+
+Entity              <|-- DamagableEntity
+Entity              <|-- Projectile
+Entity              <|-- AreaHazard
+Entity              <|-- Collectible
+Entity              <|-- InteractableObject
+
+DamagableEntity     <|-- Soldier
+DamagableEntity     <|-- Vehicle
+DamagableEntity     <|-- Enemy
+
+Soldier             <|-- PlayerSoldier
+Soldier             <|-- FusionCompanion
+PlayerSoldier       <|-- Marco
+PlayerSoldier       <|-- Tarma
+PlayerSoldier       <|-- Eri
+PlayerSoldier       <|-- Fio
+
+Direction           <|-- LeftDirection
+Direction           <|-- RightDirection
+
+TransformationState <|-- NormalTransformState
+TransformationState <|-- FatTransformState
+TransformationState <|-- MummyTransformState
+TransformationState <|-- UndeadTransformState
+
+DamageState         <|-- NormalDamageState
+DamageState         <|-- InjuredDamageState
+DamageState         <|-- CriticalDamageState
+DamageState         <|-- DeadDamageState
+
+DamageSource        <|-- BulletDamage
+DamageSource        <|-- ExplosionDamage
+DamageSource        <|-- FireDamage
+DamageSource        <|-- MeleeDamage
+DamageSource        <|-- ContactDamage
+
+Weapon              <|-- ProjectileWeapon
+Weapon              <|-- Knife
+ProjectileWeapon    <|-- Pistol
+ProjectileWeapon    <|-- HeavyMachineGun
+ProjectileWeapon    <|-- RocketLauncher
+ProjectileWeapon    <|-- FlameShot
+ProjectileWeapon    <|-- LaserGun
+ProjectileWeapon    <|-- FatPistol
+
+Grenade             <|-- HandGrenadePrototype
+Grenade             <|-- FireBombPrototype
+
+Vehicle             <|-- GroundVehicle
+Vehicle             <|-- AerialVehicle
+Vehicle             <|-- AquaticVehicle
+Vehicle             <|-- EnemyVehicle
+GroundVehicle       <|-- MetalSlug
+GroundVehicle       <|-- AmphibiousSlug
+AerialVehicle       <|-- SlugFlyer
+AquaticVehicle      <|-- SlugMariner
+EnemyVehicle        <|-- FlyingTara
+EnemyVehicle        <|-- M15ABradley
+EnemyVehicle        <|-- EnemySub
+
+VehicleModeStrategy <|-- NormalSlugMode
+VehicleModeStrategy <|-- FlyerMode
+VehicleModeStrategy <|-- MarinerMode
+
+Enemy               <|-- Infantry
+Enemy               <|-- Undead
+Enemy               <|-- Alien
+Enemy               <|-- Boss
+
+Infantry            <|-- RebelSoldier
+Infantry            <|-- ShieldedSoldier
+Infantry            <|-- BazookaSoldier
+Infantry            <|-- Grenadier
+Infantry            <|-- Paratrooper
+
+ParatrooperKind     <|-- RebelParatrooperKind
+ParatrooperKind     <|-- ShieldedParatrooperKind
+ParatrooperKind     <|-- BazookaParatrooperKind
+ParatrooperKind     <|-- GrenadierParatrooperKind
+
+Undead              <|-- MummyWarrior
+Undead              <|-- Zombie
+Alien               <|-- Martian
+
+Boss                <|-- IronNokana
+Boss                <|-- HairBusterRiberts
+Boss                <|-- SeaSatan
+Boss                <|-- UltimateBoss
+
+BossPhase           <|-- BossPhase1Ground
+BossPhase           <|-- BossPhase2Aerial
+BossPhase           <|-- BossPhase3Aquatic
+BossPhase           <|-- BossPhase4Fused
+BossPhase           <|-- BossPhaseDone
+
+EnemyAIState        <|-- PatrolAIState
+EnemyAIState        <|-- ChaseAIState
+EnemyAIState        <|-- AttackAIState
+EnemyAIState        <|-- GrudgefulAIState
+
+FiringStrategy      <|-- RocketFiringStrategy
+FiringStrategy      <|-- HMGFiringStrategy
+FiringStrategy      <|-- FireBombFiringStrategy
+FiringStrategy      <|-- FlameStreamFiringStrategy
+
+Projectile          <|-- StraightProjectile
+Projectile          <|-- BallisticProjectile
+StraightProjectile  <|-- Bullet
+StraightProjectile  <|-- Rocket
+StraightProjectile  <|-- FatBullet
+StraightProjectile  <|-- EnergyBeam
+BallisticProjectile <|-- GrenadeProjectile
+BallisticProjectile <|-- BazookaShell
+BallisticProjectile <|-- ReverseArcMissile
+GrenadeProjectile   <|-- FireBombProjectile
+
+AreaHazard          <|-- FirePool
+AreaHazard          <|-- FireStream
+
+Collectible         <|-- Turkey
+Collectible         <|-- Fruit
+Collectible         <|-- POWPrisoner
+Collectible         <|-- SupplyCrate
+
+Tile                <|-- AirTile
+Tile                <|-- SolidTile
+Tile                <|-- WaterTile
+Tile                <|-- IndestructibleTile
+
+Biome               <|-- AerialBiome
+Biome               <|-- PlainsBiome
+Biome               <|-- AquaticBiome
+
+' ============================================================
+' COMPOSITION (strong ownership; deleted in ctor/dtor)
+' ============================================================
+Game                *-- "1"   GameStateManager        : owns
+GameStateManager    *-- "*"   GameState               : owns stack (max 8)
+MenuState           *-- "1"   MainMenu                : owns
+PlayState           *-- "1"   EntityManager           : owns
+PlayState           *-- "1"   LevelManager            : owns
+PlayState           *-- "1"   GameMode                : owns (Strategy)
+PlayState           *-- "1"   CollisionManager        : owns
+PlayState           *-- "1"   ScoreManager            : owns
+PlayState           *-- "1"   HUD                     : owns
+PlayState           *-- "1"   Camera                  : owns
+PlayState           *-- "1"   TextureManager          : owns
+
+LevelManager        *-- "0..1" Level                  : creates & destroys
+Level               *-- "1"   TileMap                 : owns
+TileMap             *-- "*"   Tile                    : owns grid
+TileMap             *-- "*"   Biome                   : owns biome array
+TileMap             *-- "*"   Crater                  : tracks (by value)
+
+EntityManager       *-- "*"   Entity                  : owns roster
+
+SurvivalLevel       *-- "*"   SpawnRecipe             : owns recipes
+SurvivalLevel       *-- "1"   CowardiceReserve        : value member
+SpawnRecipe         *-- "1"   Entity                  : owns prototype
+
+BossLevel           *-- "1"   BossPhase               : owns current phase
+BossLevel           *-- "1"   IronNokana              : owns ground boss
+BossLevel           *-- "1"   HairBusterRiberts       : owns aerial boss
+BossLevel           *-- "1"   SeaSatan                : owns aquatic boss
+BossLevel           *-- "1"   UltimateBoss            : owns phase-4 boss
+
+UltimateBoss        *-- "3"   Boss                    : owns forms[3] (Ground/Aerial/Aquatic copies)
+
+DamagableEntity     *-- "1"   DamageState             : owns current state
+Soldier             *-- "1"   TransformationState     : owns current transform
+Soldier             *-- "1"   Direction               : owns facing
+
+PlayerSoldier       *-- "1"   Inventory               : value member
+Inventory           *-- "1"   Pistol                  : default
+Inventory           *-- "1"   Knife                   : melee
+Inventory           *-- "0..1" Weapon                 : currently held (when not default)
+Inventory           *-- "0..1" Grenade                : prototype
+
+Enemy               *-- "0..1" EnemyAIState           : owns AI state
+Enemy               *-- "0..1" Weapon                 : owns weapon (some)
+Paratrooper         *-- "1"   ParatrooperKind         : owns kind
+Boss                *-- "0..1" Enemy                  : minion prototype
+Boss                *-- "0..1" FiringStrategy         : current strategy
+
+IronNokana          *-- "1"   RocketFiringStrategy    : value member
+IronNokana          *-- "1"   FlameStreamFiringStrategy : value member
+IronNokana          *-- "1"   FireBombFiringStrategy  : value member
+
+AmphibiousSlug      *-- "1"   VehicleModeStrategy     : owns active mode
+FlameShot           *-- "0..1" FireStream             : owns active stream
+FireStream          *-- "1"   Direction               : owns direction
+
+' ============================================================
+' AGGREGATION (weak references; not deleted by holder)
+' ============================================================
+PlayState           o-- "0..4" PlayerSoldier          : players[] (owned by EntityManager)
+PlayState           o-- "0..4" Vehicle                : pilotedVehicle[] (owned by EntityManager)
+PlayState           o-- "0..1" FusionCompanion        : activeFusion (owned by EntityManager)
+
+LevelManager        o-- "1"   EntityManager           : back-ref
+LevelManager        o-- "1"   TextureManager          : back-ref
+SurvivalLevel       o-- "1"   EntityManager           : back-ref
+SurvivalLevel       o-- "1"   TextureManager          : back-ref
+BossLevel           o-- "1"   EntityManager           : back-ref
+BossLevel           o-- "1"   TextureManager          : back-ref
+
+CowardiceReserve    o-- "*"   Enemy                   : reference queue
+Vehicle             o-- "0..1" PlayerSoldier          : pilot
+Projectile          o-- "1"   Entity                  : owner
+DamageSource        o-- "0..1" Entity                 : cause
+FusionCompanion     o-- "0..1" PlayerSoldier          : linkedPlayer / follow target
+FusionCompanion     o-- "2..4" PlayerSoldier          : fusionMembers
+
+UltimateBoss        o-- "0..1" Boss                   : currentForm (alias to one of forms[])
+BossLevel           o-- "0..1" Boss                   : activeBoss (alias)
+
+EnemySpawn          o-- "1"   Enemy                   : master copy ref
+EnemySpawn          o-- "1"   Biome                   : biome ref
+VehicleModeStrategy o-- "1"   AmphibiousSlug          : owner back-ref
+TransformationState o-- "1"   Soldier                 : owner back-ref
+DamageState         o-- "1"   DamagableEntity         : owner back-ref
+EnemyAIState        o-- "1"   Enemy                   : owner back-ref
+BossPhase           ..> BossLevel                     : drives via tick()
+
+MainMenu            o-- "1"   GameMode                : selectedMode (transferred to PlayState)
+
+' ============================================================
+' DEPENDENCIES (transient — appear in parameters / return values)
+' ============================================================
+Game                ..> MenuState                     : creates initial state
+MenuState           ..> PlayState                     : replaceTop on ready
+Game                ..> InputHandler                  : polls per frame
+GameStateManager    ..> GameState                     : update/render top
+
+PlayState           ..> GameMode                      : setupLevels/isComplete/onLevelCleared
+PlayState           ..> Level                         : update/render/isComplete
+PlayState           ..> CollisionManager              : resolve per frame
+PlayState           ..> HUD                           : render
+PlayState           ..> ScoreManager                  : addBonuses
+PlayState           ..> Camera                        : followTarget
+PlayState           ..> InputHandler                  : handleInput
+PlayState           ..> EntityManager                 : updateAll/purgeDead/add
+PlayState           ..> Inventory                     : consumeGrenade
+PlayState           ..> FusionCompanion               : creates on F key
+PlayState           ..> Vehicle                       : enter/exit
+PlayState           ..> Collectible                   : onPickup for POW
+
+SurvivalMode        ..> LevelManager                  : loadLevel
+SurvivalMode        ..> Level                         : isComplete check
+SurvivalMode        ..> PlayState                     : advanceLevel / loadBossLevel
+CampaignMode        ..> LevelManager                  : loadLevel
+SelfPlayingMode     ..> LevelManager                  : loadLevel
+
+LevelManager        ..> SurvivalLevel                 : new + generate + spawn
+LevelManager        ..> BossLevel                     : new + generate + spawn
+LevelManager        ..> EntityManager                 : clearTransientEntities
+
+SurvivalLevel       ..> TileMap                       : builds terrain
+SurvivalLevel       ..> SpawnRecipe                   : addRecipe + fire
+SurvivalLevel       ..> Camera                        : trigger detection
+SurvivalLevel       ..> EntityManager                 : addEntity (vehicles + enemies)
+SpawnRecipe         ..> EntityManager                 : addEntity (clones)
+SpawnRecipe         ..> Entity                        : clone()
+SpawnRecipe         ..> SurvivalLevel                 : placeOnGround
+
+BossLevel           ..> BossPhase                     : enter / tick
+BossLevel           ..> Boss                          : drainBossActions
+BossLevel           ..> EntityManager                 : addEntity for minions + crates
+BossPhase1Ground    ..> IronNokana                    : activates ground boss
+BossPhase2Aerial    ..> HairBusterRiberts             : activates aerial boss
+BossPhase3Aquatic   ..> SeaSatan                      : activates aquatic boss
+BossPhase4Fused     ..> UltimateBoss                  : activates fused boss
+
+UltimateBoss        ..> IronNokana                    : delegates ground attack
+UltimateBoss        ..> HairBusterRiberts             : delegates aerial attack
+UltimateBoss        ..> SeaSatan                      : delegates aquatic attack
+
+CollisionManager    ..> EntityManager                 : reads roster
+CollisionManager    ..> DamagableEntity               : takeDamage
+CollisionManager    ..> Projectile                    : reads dir / impact
+CollisionManager    ..> Enemy                         : blocksProjectile / inReserve
+CollisionManager    ..> ShieldedSoldier               : front-block check
+CollisionManager    ..> MummyWarrior                  : fire/explosion-only kill
+CollisionManager    ..> BulletDamage                  : constructs per hit
+CollisionManager    ..> ExplosionDamage               : constructs per hit
+CollisionManager    ..> FireDamage                    : constructs per hit
+CollisionManager    ..> MeleeDamage                   : constructs per hit
+CollisionManager    ..> ContactDamage                 : constructs per hit
+CollisionManager    ..> Collectible                   : pickup mutation
+CollisionManager    ..> Vehicle                       : vehicle vs entity
+CollisionManager    ..> AreaHazard                    : applies dps
+CollisionManager    ..> ScoreManager                  : addEnemyKill/bonuses
+CollisionManager    ..> PlayState                     : callbacks
+
+Weapon              ..> Entity                        : fire returns Entity*
+Pistol              ..> Bullet                        : spawnProjectile
+HeavyMachineGun     ..> Bullet                        : spawnProjectile
+RocketLauncher      ..> Rocket                        : spawnProjectile
+FlameShot           ..> FireStream                    : creates
+LaserGun            ..> EnergyBeam                    : creates
+
+HandGrenadePrototype ..> GrenadeProjectile            : spawnProjectile
+FireBombPrototype    ..> FireBombProjectile           : spawnProjectile
+Inventory            ..> Grenade                      : clone() on throw
+
+Rocket              ..> ExplosionDamage               : on impact
+GrenadeProjectile   ..> ExplosionDamage               : on impact
+FireBombProjectile  ..> FirePool                      : spawns on impact
+FlameStreamFiringStrategy ..> FireStream              : produce()
+RocketFiringStrategy      ..> Rocket                  : produce()
+HMGFiringStrategy         ..> Bullet                  : produce()
+FireBombFiringStrategy    ..> FireBombProjectile      : produce()
+
+Paratrooper         ..> Infantry                      : ParatrooperKind::spawnLanded
+ParatrooperKind     ..> Infantry                      : factory of landed infantry
+MummyWarrior        ..> FireDamage                    : only fire kills
+MummyWarrior        ..> ExplosionDamage               : only explosion kills
+Zombie              ..> Weapon                        : uses pistol
+Martian             ..> EnergyBeam                    : phase 1 fire
+
+POWPrisoner         ..> SupplyCrate                   : drops on release
+Camera              ..> Entity                        : follows position
+HUD                 ..> PlayerSoldier                 : reads HP / lives
+HUD                 ..> ScoreManager                  : reads score
+HUD                 ..> DamageState                   : reads hueAlpha
+HUD                 ..> Level                         : reads index for banner
+
+InputHandler        ..> PlayerSoldier                 : drives input
+TileMap             ..> WaterTile                     : crater fill creates water tiles
+
+MainMenu            ..> SurvivalMode                  : constructs on select
+MainMenu            ..> CampaignMode                  : constructs on select
+MainMenu            ..> SelfPlayingMode               : constructs on select
+
+' ============================================================
+' NOTES — anchored to where logic actually lives
+' ============================================================
+note right of PlayState
+  Engine root for a running match.
+  PlayState OWNS the engine helpers (CollisionManager,
+  ScoreManager, HUD, Camera, EntityManager, LevelManager,
+  TextureManager, GameMode).
+  players[4] and pilotedVehicle[4] are AGGREGATIONS
+  (entities themselves are owned by EntityManager).
+end note
+
+note right of CampaignMode
+  Currently a stub: setupLevels calls
+  LevelManager::loadLevel(5, this) which falls into
+  loadBossLevel. Procedural-terrain plumbing
+  (NoiseProfile / FractalNoise / CampaignLevel)
+  is in the spec but not yet implemented in code.
+end note
+
+note right of SurvivalLevel
+  Spawning is camera-triggered:
+  populateLevel1/2/3() registers SpawnRecipes;
+  tickSpawnTriggers(camera) fires them when
+  cameraRight >= triggerX (max 4 per frame).
+  cowardiceReserve enqueues skipped enemies, then
+  re-emits them as grudgeful via tickCowardiceStream.
+end note
+
+note right of UltimateBoss
+  State-pattern with aggregation:
+  three pre-built Boss instances live in forms[3];
+  currentForm is reseated every formTransitionInterval
+  (~12.5s) by transitionForm(). takeDamage delegates to
+  the active form so each form has independent HP.
+end note
+
+note right of Inventory
+  Prototype host: grenadePrototype is the master Grenade*.
+  consumeGrenade() returns prototype->clone() and decrements
+  grenadeCount. forceKnifeOnly / restoreSavedWeapon handle
+  the Mummy transformation (weapon swap is reversible).
+end note
+
+note right of SpawnRecipe
+  Prototype + Factory + Trigger:
+  owns a master Entity prototype, clones it N times when
+  the camera reaches triggerX, then sets spawned=true.
+end note
+
+note right of DamagableEntity
+  State pattern host: currentDamageState* is swapped via
+  advanceDamageState():
+    exit -> delete -> next() -> swap -> enter.
+  Same shape used by Soldier::changeState and
+  Enemy::changeAIState.
+end note
+
+note right of Direction
+  Strategy with prototype:
+  LeftDirection / RightDirection answer getXSign(),
+  return their opposite from flip(), and a same-type copy
+  from clone(). Used by Soldier::facing and FireStream.
+end note
+
+note right of Zombie
+  Implements Rule of Three (copy ctor / operator= / dtor)
+  because it owns a Weapon* — cloned zombies must not share
+  the same pistol pointer.
+end note
+
+@enduml

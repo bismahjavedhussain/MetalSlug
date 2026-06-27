@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>18.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{b2193004-4811-4b9c-a0ae-e9791a027495}</ProjectGuid>
+    <RootNamespace>Project1</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v145</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>D:\OOPFinalProject\Project1\Project1\SFML\include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>D:\OOPFinalProject\Project1\Project1\SFML\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>sfml-graphics-d.lib;sfml-window-d.lib;sfml-system-d.lib;sfml-audio-d.lib;sfml-network-d.lib;</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="AerialBiome.h" />
+    <ClInclude Include="AerialVehicle.h" />
+    <ClInclude Include="AirTile.h" />
+    <ClInclude Include="Alien.h" />
+    <ClInclude Include="AmphibiousSlug.h" />
+    <ClInclude Include="AnimClip.h" />
+    <ClInclude Include="AquaticBiome.h" />
+    <ClInclude Include="AquaticVehicle.h" />
+    <ClInclude Include="AreaHazard.h" />
+    <ClInclude Include="BallisticProjectile.h" />
+    <ClInclude Include="BazookaShell.h" />
+    <ClInclude Include="BazookaSoldier.h" />
+    <ClInclude Include="Biome.h" />
+    <ClInclude Include="Boss.h" />
+    <ClInclude Include="BossLevel.h" />
+    <ClInclude Include="BossPhase.h" />
+    <ClInclude Include="Box.h" />
+    <ClInclude Include="Bullet.h" />
+    <ClInclude Include="BulletDamage.h" />
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="CampaignMode.h" />
+    <ClInclude Include="ClipEntry.h" />
+    <ClInclude Include="Collectible.h" />
+    <ClInclude Include="CollisionManager.h" />
+    <ClInclude Include="ContactDamage.h" />
+    <ClInclude Include="coordSyst.h" />
+    <ClInclude Include="CowardiceReserve.h" />
+    <ClInclude Include="CriticalDamageState.h" />
+    <ClInclude Include="DamagableEntity.h" />
+    <ClInclude Include="DamageSource.h" />
+    <ClInclude Include="DamageState.h" />
+    <ClInclude Include="DeadDamageState.h" />
+    <ClInclude Include="Direction.h" />
+    <ClInclude Include="Enemy.h" />
+    <ClInclude Include="EnemyAIState.h" />
+    <ClInclude Include="EnemySpawn.h" />
+    <ClInclude Include="EnemySub.h" />
+    <ClInclude Include="EnemyVehicle.h" />
+    <ClInclude Include="EnergyBeam.h" />
+    <ClInclude Include="Entity.h" />
+    <ClInclude Include="EntityAnims.h" />
+    <ClInclude Include="EntityManager.h" />
+    <ClInclude Include="Eri.h" />
+    <ClInclude Include="ExplosionDamage.h" />
+    <ClInclude Include="FatBullet.h" />
+    <ClInclude Include="FatPistol.h" />
+    <ClInclude Include="FatTransformState.h" />
+    <ClInclude Include="Fio.h" />
+    <ClInclude Include="FireBombProjectile.h" />
+    <ClInclude Include="FireBombPrototype.h" />
+    <ClInclude Include="FireDamage.h" />
+    <ClInclude Include="FirePool.h" />
+    <ClInclude Include="FireStream.h" />
+    <ClInclude Include="FiringStrategy.h" />
+    <ClInclude Include="FlameShot.h" />
+    <ClInclude Include="FlyingTara.h" />
+    <ClInclude Include="Fruit.h" />
+    <ClInclude Include="FusionCompanion.h" />
+    <ClInclude Include="Game.h" />
+    <ClInclude Include="GameMode.h" />
+    <ClInclude Include="GameState.h" />
+    <ClInclude Include="GameStateManager.h" />
+    <ClInclude Include="Grenade.h" />
+    <ClInclude Include="GrenadeProjectile.h" />
+    <ClInclude Include="Grenadier.h" />
+    <ClInclude Include="GroundVehicle.h" />
+    <ClInclude Include="HairBusterRiberts.h" />
+    <ClInclude Include="HandGrenadePrototype.h" />
+    <ClInclude Include="HeavyMachineGun.h" />
+    <ClInclude Include="HUD.h" />
+    <ClInclude Include="IndestructibleTile.h" />
+    <ClInclude Include="Infantry.h" />
+    <ClInclude Include="InjuredDamageState.h" />
+    <ClInclude Include="InputHandler.h" />
+    <ClInclude Include="InteractableObject.h" />
+    <ClInclude Include="Inventory.h" />
+    <ClInclude Include="IronNokana.h" />
+    <ClInclude Include="Knife.h" />
+    <ClInclude Include="LaserGun.h" />
+    <ClInclude Include="Level.h" />
+    <ClInclude Include="LevelManager.h" />
+    <ClInclude Include="M15ABradley.h" />
+    <ClInclude Include="MainMenu.h" />
+    <ClInclude Include="Marco.h" />
+    <ClInclude Include="Martian.h" />
+    <ClInclude Include="MeleeDamage.h" />
+    <ClInclude Include="MenuState.h" />
+    <ClInclude Include="MetalSlug.h" />
+    <ClInclude Include="MummyTransformState.h" />
+    <ClInclude Include="MummyWarrior.h" />
+    <ClInclude Include="NormalDamageState.h" />
+    <ClInclude Include="NormalTransformState.h" />
+    <ClInclude Include="Paratrooper.h" />
+    <ClInclude Include="ParatrooperKind.h" />
+    <ClInclude Include="PatrolAIState.h" />
+    <ClInclude Include="Pistol.h" />
+    <ClInclude Include="PlainsBiome.h" />
+    <ClInclude Include="PlayerSoldier.h" />
+    <ClInclude Include="PlayState.h" />
+    <ClInclude Include="POWPrisoner.h" />
+    <ClInclude Include="Projectile.h" />
+    <ClInclude Include="ProjectileWeapon.h" />
+    <ClInclude Include="RebelSoldier.h" />
+    <ClInclude Include="ReverseArcMissile.h" />
+    <ClInclude Include="Rocket.h" />
+    <ClInclude Include="RocketLauncher.h" />
+    <ClInclude Include="ScoreManager.h" />
+    <ClInclude Include="SeaSatan.h" />
+    <ClInclude Include="SelfPlayingMode.h" />
+    <ClInclude Include="ShieldedSoldier.h" />
+    <ClInclude Include="SlugFlyer.h" />
+    <ClInclude Include="SlugMariner.h" />
+    <ClInclude Include="Soldier.h" />
+    <ClInclude Include="SolidTile.h" />
+    <ClInclude Include="SpawnRecipe.h" />
+    <ClInclude Include="SpriteAnimator.h" />
+    <ClInclude Include="StraightProjectile.h" />
+    <ClInclude Include="SupplyCrate.h" />
+    <ClInclude Include="SurvivalLevel.h" />
+    <ClInclude Include="SurvivalMode.h" />
+    <ClInclude Include="Tarma.h" />
+    <ClInclude Include="TextureManager.h" />
+    <ClInclude Include="Tile.h" />
+    <ClInclude Include="TileMap.h" />
+    <ClInclude Include="TransformationState.h" />
+    <ClInclude Include="TSlot.h" />
+    <ClInclude Include="Turkey.h" />
+    <ClInclude Include="UltimateBoss.h" />
+    <ClInclude Include="Undead.h" />
+    <ClInclude Include="UndeadTransformState.h" />
+    <ClInclude Include="Vehicle.h" />
+    <ClInclude Include="VehicleModeStrategy.h" />
+    <ClInclude Include="VFXOverlay.h" />
+    <ClInclude Include="WaterTile.h" />
+    <ClInclude Include="Weapon.h" />
+    <ClInclude Include="Zombie.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AerialBiome.cpp" />
+    <ClCompile Include="AerialVehicle.cpp" />
+    <ClCompile Include="AirTile.cpp" />
+    <ClCompile Include="Alien.cpp" />
+    <ClCompile Include="AmphibiousSlug.cpp" />
+    <ClCompile Include="AnimClip.cpp" />
+    <ClCompile Include="AquaticBiome.cpp" />
+    <ClCompile Include="AquaticVehicle.cpp" />
+    <ClCompile Include="AreaHazard.cpp" />
+    <ClCompile Include="BallisticProjectile.cpp" />
+    <ClCompile Include="BazookaShell.cpp" />
+    <ClCompile Include="BazookaSoldier.cpp" />
+    <ClCompile Include="Biome.cpp" />
+    <ClCompile Include="Boss.cpp" />
+    <ClCompile Include="BossLevel.cpp" />
+    <ClCompile Include="BossPhase.cpp" />
+    <ClCompile Include="Box.cpp" />
+    <ClCompile Include="Bullet.cpp" />
+    <ClCompile Include="BulletDamage.cpp" />
+    <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="CampaignMode.cpp" />
+    <ClCompile Include="ClipEntry.cpp" />
+    <ClCompile Include="Collectible.cpp" />
+    <ClCompile Include="CollisionManager.cpp" />
+    <ClCompile Include="ContactDamage.cpp" />
+    <ClCompile Include="coordSyst.cpp" />
+    <ClCompile Include="CowardiceReserve.cpp" />
+    <ClCompile Include="CriticalDamageState.cpp" />
+    <ClCompile Include="DamagableEntity.cpp" />
+    <ClCompile Include="DamageSource.cpp" />
+    <ClCompile Include="DamageState.cpp" />
+    <ClCompile Include="DeadDamageState.cpp" />
+    <ClCompile Include="Direction.cpp" />
+    <ClCompile Include="Enemy.cpp" />
+    <ClCompile Include="EnemyAIState.cpp" />
+    <ClCompile Include="EnemySpawn.cpp" />
+    <ClCompile Include="EnemySub.cpp" />
+    <ClCompile Include="EnemyVehicle.cpp" />
+    <ClCompile Include="EnergyBeam.cpp" />
+    <ClCompile Include="Entity.cpp" />
+    <ClCompile Include="EntityAnims.cpp" />
+    <ClCompile Include="EntityManager.cpp" />
+    <ClCompile Include="Eri.cpp" />
+    <ClCompile Include="ExplosionDamage.cpp" />
+    <ClCompile Include="FatBullet.cpp" />
+    <ClCompile Include="FatPistol.cpp" />
+    <ClCompile Include="FatTransformState.cpp" />
+    <ClCompile Include="Fio.cpp" />
+    <ClCompile Include="FireBombProjectile.cpp" />
+    <ClCompile Include="FireBombPrototype.cpp" />
+    <ClCompile Include="FireDamage.cpp" />
+    <ClCompile Include="FirePool.cpp" />
+    <ClCompile Include="FireStream.cpp" />
+    <ClCompile Include="FiringStrategy.cpp" />
+    <ClCompile Include="FlameShot.cpp" />
+    <ClCompile Include="FlyingTara.cpp" />
+    <ClCompile Include="Fruit.cpp" />
+    <ClCompile Include="FusionCompanion.cpp" />
+    <ClCompile Include="Game.cpp" />
+    <ClCompile Include="GameMode.cpp" />
+    <ClCompile Include="GameState.cpp" />
+    <ClCompile Include="GameStateManager.cpp" />
+    <ClCompile Include="Grenade.cpp" />
+    <ClCompile Include="GrenadeProjectile.cpp" />
+    <ClCompile Include="Grenadier.cpp" />
+    <ClCompile Include="GroundVehicle.cpp" />
+    <ClCompile Include="HairBusterRiberts.cpp" />
+    <ClCompile Include="HandGrenadePrototype.cpp" />
+    <ClCompile Include="HeavyMachineGun.cpp" />
+    <ClCompile Include="HUD.cpp" />
+    <ClCompile Include="IndestructibleTile.cpp" />
+    <ClCompile Include="Infantry.cpp" />
+    <ClCompile Include="InjuredDamageState.cpp" />
+    <ClCompile Include="InputHandler.cpp" />
+    <ClCompile Include="InteractableObject.cpp" />
+    <ClCompile Include="Inventory.cpp" />
+    <ClCompile Include="IronNokana.cpp" />
+    <ClCompile Include="Knife.cpp" />
+    <ClCompile Include="LaserGun.cpp" />
+    <ClCompile Include="Level.cpp" />
+    <ClCompile Include="LevelManager.cpp" />
+    <ClCompile Include="M15ABradley.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="MainMenu.cpp" />
+    <ClCompile Include="Marco.cpp" />
+    <ClCompile Include="Martian.cpp" />
+    <ClCompile Include="MeleeDamage.cpp" />
+    <ClCompile Include="MenuState.cpp" />
+    <ClCompile Include="MetalSlug.cpp" />
+    <ClCompile Include="MummyTransformState.cpp" />
+    <ClCompile Include="MummyWarrior.cpp" />
+    <ClCompile Include="NormalDamageState.cpp" />
+    <ClCompile Include="NormalTransformState.cpp" />
+    <ClCompile Include="Paratrooper.cpp" />
+    <ClCompile Include="ParatrooperKind.cpp" />
+    <ClCompile Include="PatrolAIState.cpp" />
+    <ClCompile Include="Pistol.cpp" />
+    <ClCompile Include="PlainsBiome.cpp" />
+    <ClCompile Include="PlayerSoldier.cpp" />
+    <ClCompile Include="PlayState.cpp" />
+    <ClCompile Include="POWPrisoner.cpp" />
+    <ClCompile Include="Projectile.cpp" />
+    <ClCompile Include="ProjectileWeapon.cpp" />
+    <ClCompile Include="RebelSoldier.cpp" />
+    <ClCompile Include="ReverseArcMissile.cpp" />
+    <ClCompile Include="Rocket.cpp" />
+    <ClCompile Include="RocketLauncher.cpp" />
+    <ClCompile Include="ScoreManager.cpp" />
+    <ClCompile Include="SeaSatan.cpp" />
+    <ClCompile Include="SelfPlayingMode.cpp" />
+    <ClCompile Include="ShieldedSoldier.cpp" />
+    <ClCompile Include="SlugFlyer.cpp" />
+    <ClCompile Include="SlugMariner.cpp" />
+    <ClCompile Include="Soldier.cpp" />
+    <ClCompile Include="SolidTile.cpp" />
+    <ClCompile Include="SpawnRecipe.cpp" />
+    <ClCompile Include="SpriteAnimator.cpp" />
+    <ClCompile Include="StraightProjectile.cpp" />
+    <ClCompile Include="SupplyCrate.cpp" />
+    <ClCompile Include="SurvivalLevel.cpp" />
+    <ClCompile Include="SurvivalMode.cpp" />
+    <ClCompile Include="Tarma.cpp" />
+    <ClCompile Include="TextureManager.cpp" />
+    <ClCompile Include="Tile.cpp" />
+    <ClCompile Include="TileMap.cpp" />
+    <ClCompile Include="TransformationState.cpp" />
+    <ClCompile Include="Tslot.cpp" />
+    <ClCompile Include="Turkey.cpp" />
+    <ClCompile Include="UltimateBoss.cpp" />
+    <ClCompile Include="Undead.cpp" />
+    <ClCompile Include="UndeadTransformState.cpp" />
+    <ClCompile Include="Vehicle.cpp" />
+    <ClCompile Include="VehicleModeStrategy.cpp" />
+    <ClCompile Include="VFXOverlay.cpp" />
+    <ClCompile Include="WaterTile.cpp" />
+    <ClCompile Include="Weapon.cpp" />
+    <ClCompile Include="Zombie.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
