@@ -16,3 +16,6 @@ Release/
 *.exp
 *.lib
 *.log
+
+# Local-only docs (not pushed to remote)
+Project1/ProjectMDFile/
